@@ -1,0 +1,25 @@
+.window{
+    width:200px;
+    height: 200px;
+    overflow: hidden;
+    margin: 0 auto;
+}
+.images{
+    position:relative;
+}
+.images > img{
+    position:absolute;
+    transition: all 1s;
+    width: 100%;
+}
+.current{
+    transform:translateX(0);
+    z-index:1;
+}
+.enter{
+    transform:translateX(100%);
+}
+.leave{
+    z-index:1;
+    transform:translateX(-100%);
+}
