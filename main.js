@@ -1,13 +1,28 @@
-let n
-init()
-let timer = autoPlay()
+let $slides = $('#slides')
+let $images = $slides.children('img')
+let $pages = $('.buttonWrapper>button')
+let current = 0
 
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        clearInterval(timer)
-    } else {
-        timer = autoPlay()
+makeFackSlides()
+$slides.hide().offset()
+$slides.css({transform: `translateX(-300px)`}).show()
+
+bindEvents()
+
+let timer = setTimer()
+
+document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){
+        window.clearInterval(timer)
+    }else{
+        timer = setTimer()
     }
+})
+
+$('.container').on('mouseenter',()=>{
+    window.clearInterval(timer)
+}).on('mouseleave',()=>{
+    timer = setTimer()
 })
 
 
@@ -17,44 +32,52 @@ document.addEventListener('visibilitychange', () => {
 
 
 
-
-
-function autoPlay() {
-    return setInterval(() => {
-        makeLeave(getImages(n)).one('transitionend', (e) => {makeEnter($(e.currentTarget))})
-        makeCurrent(getImages(n + 1))
-        n += 1
-    }, 1500)
+function setTimer() {
+   return setInterval(()=>{
+        goToSlide(current+1)
+    },1500)
 }
 
-function makeLeave(node) {
-    return node.addClass('leave').removeClass('current')
+function makeFackSlides() {
+    let $firstCopy = $images.eq(0).clone(true)
+    let $lastCopy = $images.eq($images.length - 1).clone(true)
+    $slides.append($firstCopy)
+    $slides.prepend($lastCopy)
 }
 
-function makeEnter(node) {
-    return node.removeClass('leave').addClass('enter')
+function bindEvents() {
+    $('#previous').on('click',()=>{
+        goToSlide(current-1)
+    })
+    $('#next').on('click',()=>{
+        goToSlide(current+1)
+    })
+    $pages.on('click', (e) => {
+        let index = $(e.currentTarget).index()
+        goToSlide(index)
+    })
 }
 
-function makeCurrent(node) {
-    return node.addClass('current').removeClass('enter')
-}
-
-function getImages(n) {
-    return $(`.images>img:nth-child(${x(n)})`)
-}
-
-function init() {
-    n = 1
-    $(`.images>img:nth-child(${n})`).addClass('current').siblings().addClass('enter')
-}
-
-function x(n) {
-    let images = $('.images>img')
-    if (n > images.length) {
-        n = n % (images.length)
-        if (n === 0) {
-            n = images.length
-        }
+function goToSlide(index) {
+    if(index>$pages.length-1){
+        index = 0
+    }else if(index<0){
+        index = $pages.length-1
     }
-    return n
+    if (current === $images.length - 1 && index === 0) {
+        $slides.css({transform: `translateX(${-($images.length + 1) * 300}px)`})
+            .one('transitionend', () => {
+                $slides.hide().offset()
+                $slides.css({transform: `translateX(${-(index + 1) * 300}px)`}).show()
+            })
+    } else if (current === 0 && index === $images.length - 1) {
+        $slides.css({transform: `translateX(0px)`})
+            .one('transitionend', () => {
+                $slides.hide().offset()
+                $slides.css({transform: `translateX(${-(index + 1) * 300}px`}).show()
+            })
+    } else {
+        $slides.css({transform: `translateX(${-(index + 1) * 300}px)`})
+    }
+    current = index
 }
